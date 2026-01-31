@@ -25,6 +25,18 @@ router.post(
 );
 
 /**
+ * @route   POST /api/inventory/bulk
+ * @desc    Bulk upsert inventory (for seeding)
+ * @access  Owner
+ */
+router.post(
+    "/bulk",
+    authenticate,
+    requireRole([UserRole.OWNER]),
+    (req, res, next) => inventoryController.bulkUpsert(req, res).catch(next),
+);
+
+/**
  * @route   POST /api/webhooks/supplier
  * @desc    Supplier webhook for order updates
  * @access  Public (webhook)
