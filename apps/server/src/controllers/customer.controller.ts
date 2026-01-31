@@ -45,8 +45,11 @@ export class CustomerController {
      * Create a new request from web
      */
     async createRequest(req: Request, res: Response): Promise<void> {
-        const { payload, customerId } = req.body as CreateRequestRequest;
-
+        var { payload, customerId } = req.body as CreateRequestRequest;
+        
+         if(customerId==="" || customerId==undefined){
+            customerId = req.user?.id
+        }
         const requestId = await requestService.createRequest(
             payload,
             customerId || req.user?.id,

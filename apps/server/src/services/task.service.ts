@@ -1,6 +1,8 @@
-import { TaskStatus, RequestStatus } from "../types/types";
+import { TaskStatus } from "../types/types";
 import prisma from "@Hackron/db";
 import { AppError } from "../middleware/error.middleware";
+import { invokeAgent } from "../agent";
+import type { PlannedTask } from "../agent";
 
 /**
  * Task Service - Business logic for task management
@@ -161,6 +163,46 @@ export class TaskService {
         //   })),
         // });
     }
+
+    /**
+     * Create tasks from agent's planned tasks
+     * Used by act.node to create tasks in DB
+     */
+    async createTasksFromAgent(requestId: string, plannedTasks: PlannedTask[]): Promise<any[]> {
+        const createdTasks: any[] = [];
+
+        for (const task of plannedTasks) {
+            const created = await prisma.task.create({
+                data: {
+                    requestId,
+                    title: task.title,
+                    description: task.description,
+                    requiredSkills: task.requiredSkills,
+                    estimatedMin: task.estimatedMin,
+                    status: task.suggestedWorkerId ? TaskStatus.ASSIGNED : TaskStatus.PENDING,
+                    workerId: task.suggestedWorkerId,
+                },
+            });
+            createdTasks.push(created);
+        }
+
+        console.log(`[TaskService] Created ${createdTasks.length} tasks from agent for request ${requestId}`);
+        return createdTasks;
+    }
+
+    /**
+     * Trigger agent re-evaluation for a request
+     * Used when task state changes (accept, complete, etc.)
+     */
+    async triggerAgentReEvaluation(requestId: string): Promise<void> {
+        console.log(`[TaskService] Triggering agent re-evaluation for request ${requestId}`);
+
+        // Trigger agent workflow (fire and forget)
+        invokeAgent(requestId).catch(err =>
+            console.error(`[TaskService] Agent re-evaluation failed for ${requestId}:`, err)
+        );
+    }
 }
 
 export const taskService = new TaskService();
+
