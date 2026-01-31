@@ -1,0 +1,3 @@
+{
+  "extends": "@Hackron/config/tsconfig.base.json"
+}
