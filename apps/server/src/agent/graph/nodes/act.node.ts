@@ -1,5 +1,6 @@
 import prisma from "@Hackron/db";
 import type { OpsState } from "../../prompts/state";
+import { taskService } from "../../../services/task.service";
 
 /**
  * Act Node (Execution Agent)
@@ -81,20 +82,8 @@ async function handleAcceptAndPlan(state: OpsState): Promise<void> {
     return;
   }
 
-  // Create tasks in database
-  for (const task of state.plannedTasks) {
-    await prisma.task.create({
-      data: {
-        requestId: state.request!.id,
-        title: task.title,
-        description: task.description,
-        requiredSkills: task.requiredSkills,
-        estimatedMin: task.estimatedMin,
-        status: task.suggestedWorkerId ? "ASSIGNED" : "PENDING",
-        workerId: task.suggestedWorkerId,
-      },
-    });
-  }
+  // Create tasks using task service (better separation of concerns)
+  await taskService.createTasksFromAgent(state.request!.id, state.plannedTasks);
 
   // Update request status
   await prisma.request.update({
@@ -102,7 +91,7 @@ async function handleAcceptAndPlan(state: OpsState): Promise<void> {
     data: { status: "IN_PROGRESS" },
   });
 
-  console.log(`[ACT] Created ${state.plannedTasks.length} tasks`);
+  console.log(`[ACT] Created ${state.plannedTasks.length} tasks and updated request status`);
 }
 
 /**

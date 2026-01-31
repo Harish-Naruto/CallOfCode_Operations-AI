@@ -43,6 +43,16 @@ export class WorkerController {
 
         await taskService.acceptTask(taskId, workerId);
 
+        // Auto-trigger agent to re-evaluate workload and priorities
+        const task = await import("@Hackron/db").then(m => m.default.task.findUnique({
+            where: { id: taskId },
+            select: { requestId: true },
+        }));
+
+        if (task?.requestId) {
+            await taskService.triggerAgentReEvaluation(task.requestId);
+        }
+
         const response: SuccessResponse = {
             success: true,
         };
@@ -89,6 +99,16 @@ export class WorkerController {
             quality_ok,
             notes,
         );
+
+        // Auto-trigger agent to assign next tasks or mark request complete
+        const task = await import("@Hackron/db").then(m => m.default.task.findUnique({
+            where: { id: taskId },
+            select: { requestId: true },
+        }));
+
+        if (task?.requestId) {
+            await taskService.triggerAgentReEvaluation(task.requestId);
+        }
 
         const response: SuccessResponse = {
             success: true,

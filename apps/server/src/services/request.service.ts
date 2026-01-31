@@ -187,6 +187,35 @@ export class RequestService {
             });
         });
     }
+
+    /**
+     * Update request status (used by agent or external triggers)
+     */
+    async updateRequestStatus(
+        requestId: string,
+        status: RequestStatus,
+    ): Promise<void> {
+        await prisma.request.update({
+            where: { id: requestId },
+            data: { status },
+        });
+
+        console.log(`[RequestService] Updated request ${requestId} to ${status}`);
+    }
+
+    /**
+     * Trigger agent re-evaluation for a request
+     * Used when events occur (task completed, inventory changed, etc.)
+     */
+    async triggerAgentReEvaluation(requestId: string): Promise<void> {
+        console.log(`[RequestService] Triggering agent re-evaluation for ${requestId}`);
+
+        // Trigger agent workflow (fire and forget)
+        invokeAgent(requestId).catch(err =>
+            console.error(`[RequestService] Agent re-evaluation failed for ${requestId}:`, err)
+        );
+    }
 }
 
 export const requestService = new RequestService();
+
