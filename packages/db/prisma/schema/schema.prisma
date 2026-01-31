@@ -8,3 +8,145 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+
+//// ENUMS
+
+enum UserRole {
+  OWNER
+  WORKER
+  CUSTOMER
+}
+
+enum RequestStatus {
+  NEW
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+enum TaskStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum AuditActor {
+  AGENT
+  OWNER
+  WORKER
+  CUSTOMER
+  WEBHOOK
+}
+
+//// MODELS
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String?  @unique
+  role        UserRole
+  skills      String[] // ["tailoring", "delivery"]
+  isActive    Boolean  @default(true)
+
+  tasks       Task[]   @relation("WorkerTasks")
+  createdAt   DateTime @default(now())
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+
+  requests  Request[]
+  createdAt DateTime @default(now())
+}
+
+model Request {
+  id            String         @id @default(uuid())
+  customerId    String?
+  customer      Customer?      @relation(fields: [customerId], references: [id])
+
+  source        String         // whatsapp | web
+  status        RequestStatus
+  priority      Int            @default(0)
+  dueBy         DateTime?
+
+  payload       Json           // normalized request payload
+  payloadRaw    Json?
+
+  tasks         Task[]
+  auditLogs     AuditAction[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Task {
+  id            String     @id @default(uuid())
+  requestId     String
+  request       Request    @relation(fields: [requestId], references: [id])
+
+  title         String
+  description   String?
+  requiredSkills String[]
+  estimatedMin  Int
+
+  status        TaskStatus
+  assignedToId  String?
+  assignedTo    User?      @relation("WorkerTasks", fields: [assignedToId], references: [id])
+
+  startedAt     DateTime?
+  completedAt   DateTime?
+
+  metadata      Json?
+
+  createdAt     DateTime @default(now())
+}
+
+model InventoryItem {
+  id            String   @id @default(uuid())
+  sku           String   @unique
+  name          String
+  quantity      Int
+  reorderPoint  Int
+
+  updatedAt     DateTime @updatedAt
+}
+
+model Supplier {
+  id              String   @id @default(uuid())
+  name            String
+  reliability     Float    // 0..1
+  leadTimeHours   Int
+  orders          SupplierOrder[]
+  createdAt       DateTime @default(now())
+}
+
+model SupplierOrder {
+  id            String   @id @default(uuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id])
+
+  items         Json     // [{ sku, qty }]
+  eta           DateTime
+  status        String   // placed | delayed | received
+
+  createdAt     DateTime @default(now())
+}
+
+model AuditAction {
+  id          String      @id @default(uuid())
+  requestId   String?
+  request     Request?   @relation(fields: [requestId], references: [id])
+
+  actor       AuditActor
+  action      String     // assign_task | promise_validate | detect_bottleneck
+  context     Json       // snapshot + scores
+  reason      String?
+
+  createdAt   DateTime   @default(now())
+}
