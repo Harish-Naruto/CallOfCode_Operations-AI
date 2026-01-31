@@ -124,13 +124,18 @@ export class AuthService {
     ): Promise<AuthResponse> {
         console.log("Registering customer:", { email: data.email, name: data.name });
 
-        // Check if user already exists
+        // Check if user already exists with this email and role
         const existingUser = await prisma.user.findUnique({
-            where: { email: data.email }
+            where: {
+                unique_email_per_role: {
+                    email: data.email,
+                    role: UserRole.CUSTOMER
+                }
+            }
         });
 
         if (existingUser) {
-            throw new AppError(409, "Email already registered");
+            throw new AppError(409, "Email already registered as customer");
         }
 
         // Hash password if provided, otherwise generate a random one
@@ -192,13 +197,18 @@ export class AuthService {
     async registerWorker(data: RegisterWorkerInput): Promise<AuthResponse> {
         console.log("Registering worker:", { email: data.email, name: data.name });
 
-        // Check if user already exists
+        // Check if user already exists with this email and role
         const existingUser = await prisma.user.findUnique({
-            where: { email: data.email }
+            where: {
+                unique_email_per_role: {
+                    email: data.email,
+                    role: UserRole.WORKER
+                }
+            }
         });
 
         if (existingUser) {
-            throw new AppError(409, "Email already registered");
+            throw new AppError(409, "Email already registered as worker");
         }
 
         // Hash password
@@ -258,13 +268,18 @@ export class AuthService {
     async registerOwner(data: RegisterOwnerInput): Promise<AuthResponse> {
         console.log("Registering owner:", { email: data.email, name: data.name });
 
-        // Check if user already exists
+        // Check if user already exists with this email and role
         const existingUser = await prisma.user.findUnique({
-            where: { email: data.email }
+            where: {
+                unique_email_per_role: {
+                    email: data.email,
+                    role: UserRole.OWNER
+                }
+            }
         });
 
         if (existingUser) {
-            throw new AppError(409, "Email already registered");
+            throw new AppError(409, "Email already registered as owner");
         }
 
         // Hash password
@@ -323,11 +338,33 @@ export class AuthService {
     async login(credentials: LoginInput): Promise<AuthResponse> {
         console.log("Login attempt for:", credentials.email);
 
-        // Find user by email
-        const user = await prisma.user.findUnique({
+        // Find all users with this email
+        const users = await prisma.user.findMany({
             where: { email: credentials.email },
         });
 
+        if (users.length === 0) {
+            throw new AppError(401, "Invalid credentials");
+        }
+
+        // If role is specified, find that specific user
+        let user: typeof users[0] | undefined;
+        if (credentials.role) {
+            user = users.find(u => u.role === credentials.role);
+            if (!user) {
+                throw new AppError(401, "Invalid credentials");
+            }
+        } else if (users.length === 1) {
+            // Only one account, use it
+            user = users[0];
+        } else {
+            // Multiple accounts exist, role must be specified
+            const availableRoles = users.map(u => u.role).join(", ");
+            throw new AppError(400, `Multiple accounts found. Please specify role. Available roles: ${availableRoles}`);
+        }
+
+
+        // This should never happen due to above logic, but satisfies TypeScript
         if (!user) {
             throw new AppError(401, "Invalid credentials");
         }

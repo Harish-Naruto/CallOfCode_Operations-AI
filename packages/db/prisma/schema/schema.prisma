@@ -44,9 +44,9 @@ enum AuditActor {
 //// MODELS
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  phone        String?  @unique
+  id           String   @id @default(uuid())
+  email        String
+  phone        String?
   name         String
   role         UserRole
   passwordHash String
@@ -61,13 +61,15 @@ model User {
   owner    Owner?
   tasks    Task[]
 
+  @@unique([email, role], name: "unique_email_per_role")
+  @@unique([phone, role], name: "unique_phone_per_role")
   @@index([email])
   @@index([phone])
   @@index([role])
 }
 
 model Customer {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String   @unique
   email     String
   phone     String?
@@ -84,7 +86,7 @@ model Customer {
 }
 
 model Worker {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String   @unique
   email     String
   phone     String?
@@ -101,7 +103,7 @@ model Worker {
 }
 
 model Owner {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String   @unique
   email     String
   phone     String?

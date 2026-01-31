@@ -65,6 +65,7 @@ export const registerOwnerSchema = z.object({
 export const loginSchema = z.object({
     email: z.string().regex(emailRegex, "Invalid email format"),
     password: z.string().min(1, "Password is required"),
+    role: z.enum(["CUSTOMER", "WORKER", "OWNER"]).optional(), // Optional: specify role if user has multiple accounts
 });
 
 /**
