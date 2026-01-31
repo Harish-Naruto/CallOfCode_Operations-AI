@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { customerController } from "../../controllers/customer.controller";
 import { validate } from "../../middleware/validation.middleware";
 import { createRequestSchema } from "../../middleware/validation.middleware";
-import { optionalAuthenticate } from "../../middleware/auth.middleware";
+import { authenticate, optionalAuthenticate } from "../../middleware/auth.middleware";
 
 const router: IRouter = Router();
 
@@ -20,11 +20,11 @@ router.post(
 /**
  * @route   POST /api/requests
  * @desc    Create new request from web
- * @access  Public (optional auth)
+ * @access  Authenticated (customers must be logged in)
  */
 router.post(
     "/requests",
-    optionalAuthenticate,
+    authenticate,
     validate(createRequestSchema),
     (req, res, next) => customerController.createRequest(req, res).catch(next),
 );

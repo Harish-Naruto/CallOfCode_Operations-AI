@@ -5,9 +5,9 @@ import { UserRole } from "@/lib/types/auth";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
-    LogOut, User, Mail, Phone, Shield, 
-    PlusCircle, ListChecks, LayoutDashboard, 
+import {
+    LogOut, User, Mail, Phone, Shield,
+    PlusCircle, ListChecks, LayoutDashboard,
     Settings, Bell, Search, Sparkles
 } from "lucide-react";
 
@@ -37,7 +37,7 @@ export default function CustomerDashboard() {
     return (
         <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
             <div className="min-h-screen bg-[#001D29] text-white flex flex-col lg:flex-row relative overflow-hidden">
-                
+
                 {/* --- Ambient Background Elements --- */}
                 <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#0096C7] rounded-full blur-[150px] opacity-10 pointer-events-none" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-[#00B4D8] rounded-full blur-[120px] opacity-10 pointer-events-none" />
@@ -52,7 +52,7 @@ export default function CustomerDashboard() {
                         <button className="p-3 text-white/40 hover:text-white transition-colors"><Bell className="w-6 h-6" /></button>
                         <button className="p-3 text-white/40 hover:text-white transition-colors"><Settings className="w-6 h-6" /></button>
                     </nav>
-                    <button 
+                    <button
                         onClick={handleLogout}
                         className="mt-auto p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all group"
                     >
@@ -62,8 +62,8 @@ export default function CustomerDashboard() {
 
                 {/* --- Main Content Area --- */}
                 <main className="flex-1 relative z-10 p-4 md:p-8 lg:p-12 overflow-y-auto">
-                    
-                    <motion.div 
+
+                    <motion.div
                         variants={containerVariants}
                         initial="hidden"
                         animate="visible"
@@ -77,11 +77,11 @@ export default function CustomerDashboard() {
                                     Welcome back, <span className="text-white">{user?.name}</span>
                                 </p>
                             </motion.div>
-                            
+
                             <motion.div variants={itemVariants} className="relative w-full md:w-auto group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                                <input 
-                                    placeholder="Search services..." 
+                                <input
+                                    placeholder="Search services..."
                                     className="w-full md:w-64 pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-[#00B4D8] transition-all"
                                 />
                             </motion.div>
@@ -89,7 +89,7 @@ export default function CustomerDashboard() {
 
                         <div className="grid lg:grid-cols-3 gap-8">
                             {/* Profile Card (Left) */}
-                            <motion.section 
+                            <motion.section
                                 variants={itemVariants}
                                 className="lg:col-span-1 bg-gradient-to-br from-white/10 to-transparent backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 space-y-8"
                             >
@@ -126,13 +126,15 @@ export default function CustomerDashboard() {
                             {/* Quick Actions & Feed (Right) */}
                             <div className="lg:col-span-2 space-y-8">
                                 <motion.div variants={itemVariants} className="grid md:grid-cols-2 gap-4">
-                                    <button className="group p-6 bg-[#00B4D8] rounded-[2rem] text-[#001D29] flex items-center gap-4 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#00B4D8]/20">
+                                    <button
+                                        onClick={() => router.push('/customer/inventory')}
+                                        className="group p-6 bg-[#00B4D8] rounded-[2rem] text-[#001D29] flex items-center gap-4 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#00B4D8]/20">
                                         <div className="p-3 bg-white/20 rounded-2xl group-hover:rotate-12 transition-transform">
                                             <PlusCircle className="w-6 h-6" />
                                         </div>
                                         <div className="text-left">
-                                            <div className="font-bold">New Request</div>
-                                            <div className="text-xs opacity-70">Start a new project</div>
+                                            <div className="font-bold">Show Inventory</div>
+                                            <div className="text-xs opacity-70">Browse available items</div>
                                         </div>
                                     </button>
 
@@ -147,7 +149,7 @@ export default function CustomerDashboard() {
                                     </button>
                                 </motion.div>
 
-                                <motion.div 
+                                <motion.div
                                     variants={itemVariants}
                                     className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8"
                                 >

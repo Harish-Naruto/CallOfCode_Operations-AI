@@ -12,13 +12,17 @@ export const requireRole = (allowedRoles: UserRole[]) => {
             throw new AppError(401, "Authentication required");
         }
 
+        console.log("[AUTH DEBUG] User role:", req.user.role, "| Allowed roles:", allowedRoles);
+
         if (!allowedRoles.includes(req.user.role)) {
+            console.log("[AUTH DEBUG] Access DENIED - role mismatch");
             throw new AppError(
                 403,
                 `Access denied. Required roles: ${allowedRoles.join(", ")}`,
             );
         }
 
+        console.log("[AUTH DEBUG] Access GRANTED");
         next();
     };
 };

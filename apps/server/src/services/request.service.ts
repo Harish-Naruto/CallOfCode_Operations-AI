@@ -18,9 +18,38 @@ export class RequestService {
         source: string = "web",
     ): Promise<string> {
 
+        console.log("[CreateRequest] Received customerId:", customerId);
+
+        // If customerId is provided and looks like a userId (from JWT), lookup the actual Customer record
+        let actualCustomerId: string | null = null;
+
+        if (customerId) {
+            // Try to find Customer by userId (in case we received User.id instead of Customer.id)
+            const customer = await prisma.customer.findUnique({
+                where: { userId: customerId },
+            });
+
+            console.log("[CreateRequest] Customer lookup by userId:", customer?.id || "NOT FOUND");
+
+            if (customer) {
+                actualCustomerId = customer.id;
+            } else {
+                // Check if it's already a Customer.id
+                const directCustomer = await prisma.customer.findUnique({
+                    where: { id: customerId },
+                });
+                console.log("[CreateRequest] Customer lookup by id:", directCustomer?.id || "NOT FOUND");
+                if (directCustomer) {
+                    actualCustomerId = directCustomer.id;
+                }
+            }
+        }
+
+        console.log("[CreateRequest] Final actualCustomerId:", actualCustomerId);
+
         const request = await prisma.request.create({
             data: {
-                customerId,
+                customerId: actualCustomerId, // Use looked-up Customer.id or null
                 source,
                 status: RequestStatus.NEW,
                 payload: payload as any, // Prisma json type handling

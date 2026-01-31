@@ -60,14 +60,14 @@ app.use("/api/auth", authRoutes);
 // Customer routes (public and semi-public)
 app.use("/api", customerRoutes);
 
+// Inventory routes (must be before worker routes to avoid auth blocking)
+app.use("/api/inventory", inventoryRoutes);
+
 // Worker routes (authenticated)
 app.use("/api", workerRoutes);
 
 // Owner routes (admin only)
 app.use("/api/owner", ownerRoutes);
-
-// Inventory routes
-app.use("/api/inventory", inventoryRoutes);
 
 // Internal agent routes (protected by agent guard)
 app.use("/internal", agentRoutes);

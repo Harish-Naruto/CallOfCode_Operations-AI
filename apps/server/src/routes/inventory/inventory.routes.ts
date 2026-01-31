@@ -30,13 +30,11 @@ router.post(
 
 /**
  * @route   GET /api/inventory
- * @desc    Get all inventory items
- * @access  Owner
+ * @desc    Get all inventory items (public for customers to browse)
+ * @access  Public (optional auth)
  */
 router.get(
     "/",
-    authenticate,
-    requireRole([UserRole.OWNER]),
     (req, res, next) => inventoryController.getInventoryItems(req, res).catch(next),
 );
 
