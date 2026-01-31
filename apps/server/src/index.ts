@@ -18,7 +18,13 @@ import agentRoutes from "./routes/internal/agent.routes";
 const app = express();
 
 // CORS configuration
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+app.use(cors({
+  origin: env.CORS_ORIGIN,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Idempotency-Key'],
+  exposedHeaders: ['Set-Cookie']
+}));
 
 // Body parsing
 app.use(express.json());
