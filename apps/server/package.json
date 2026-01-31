@@ -12,16 +12,22 @@
   "dependencies": {
     "@Hackron/db": "workspace:*",
     "@Hackron/env": "workspace:*",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "catalog:",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@Hackron/config": "workspace:*",
+    "@types/bcrypt": "^6.0.0",
     "@types/bun": "catalog:",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "tsdown": "^0.16.5",
     "typescript": "catalog:"
   }

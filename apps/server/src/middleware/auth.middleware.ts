@@ -1,74 +1,89 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "./error.middleware";
+import { authService } from "../services/auth.service";
 import type { AuthenticatedUser } from "../types/types";
+import { AppError } from "./error.middleware";
 
 /**
- * Authentication middleware
- * TODO: Implement actual JWT validation with Supabase Auth or custom JWT
+ * Authentication Middleware
+ * Verifies JWT tokens and attaches user to request
  */
-export const authenticate = async (
+
+/**
+ * Extract token from Authorization header or cookies
+ */
+function extractToken(req: Request): string | null {
+    // Check Authorization header (Bearer token)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        return authHeader.substring(7);
+    }
+
+    // Check cookies (for browser-based clients)
+    if (req.cookies && req.cookies.accessToken) {
+        return req.cookies.accessToken;
+    }
+
+    return null;
+}
+
+/**
+ * Middleware to authenticate requests
+ * Throws error if token is missing or invalid
+ */
+export function authenticate(
     req: Request,
     _res: Response,
     next: NextFunction,
-) => {
+): void {
     try {
-        const authHeader = req.headers.authorization;
+        const token = extractToken(req);
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            throw new AppError(401, "Missing or invalid authorization header");
+        if (!token) {
+            throw new AppError(401, "Authentication required");
         }
 
-        const token = authHeader.substring(7);
+        // Verify token and extract payload
+        const payload = authService.verifyAccessToken(token);
 
-        // TODO: Replace with actual JWT verification
-        // For now, this is a placeholder that extracts mock user data
-        const user = await verifyToken(token);
+        // Attach user to request
+        req.user = {
+            id: payload.userId,
+            role: payload.role,
+            name: payload.email, // Will be replaced with actual name from DB
+        } as AuthenticatedUser;
 
-        req.user = user;
         next();
     } catch (error) {
         next(error);
     }
-};
+}
 
 /**
- * Optional authentication - doesn't fail if no token provided
+ * Optional authentication middleware
+ * Attaches user if token is valid, but doesn't throw error if missing
  */
-export const optionalAuthenticate = async (
+export function optionalAuthenticate(
     req: Request,
     _res: Response,
     next: NextFunction,
-) => {
+): void {
     try {
-        const authHeader = req.headers.authorization;
+        const token = extractToken(req);
 
-        if (authHeader && authHeader.startsWith("Bearer ")) {
-            const token = authHeader.substring(7);
-            const user = await verifyToken(token);
-            req.user = user;
+        if (token) {
+            const payload = authService.verifyAccessToken(token);
+
+            req.user = {
+                id: payload.userId,
+                role: payload.role,
+                name: payload.email,
+            } as AuthenticatedUser;
         }
 
         next();
     } catch (error) {
-        // Silently continue without user if token is invalid
+        // Ignore authentication errors for optional auth
+        // Invalid tokens are simply not attached to req.user
         next();
     }
-};
-
-/**
- * TODO: Implement actual JWT verification
- * This is a placeholder implementation
- */
-async function verifyToken(token: string): Promise<AuthenticatedUser> {
-    // Placeholder: In production, verify JWT signature and decode payload
-    if (!token || token === "invalid") {
-        throw new AppError(401, "Invalid token");
-    }
-
-    // Mock user data - replace with actual JWT decode
-    return {
-        id: "user_placeholder",
-        role: "WORKER" as any,
-        name: "Placeholder User",
-    };
 }

@@ -1,14 +1,13 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated"
+  provider     = "prisma-client"
+  output       = "../generated"
   moduleFormat = "esm"
-  runtime = "bun"
+  runtime      = "bun"
 }
 
 datasource db {
   provider = "postgresql"
 }
-
 
 //// ENUMS
 
@@ -45,108 +44,161 @@ enum AuditActor {
 //// MODELS
 
 model User {
-  id          String   @id @default(uuid())
-  name        String
-  phone       String?  @unique
-  role        UserRole
-  skills      String[] // ["tailoring", "delivery"]
-  isActive    Boolean  @default(true)
+  id           String   @id @default(cuid())
+  email        String   @unique
+  phone        String?  @unique
+  name         String
+  role         UserRole
+  passwordHash String
+  skills       String[] // JSON array for worker skills
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  tasks       Task[]   @relation("WorkerTasks")
-  createdAt   DateTime @default(now())
+  // Relations
+  customer Customer?
+  worker   Worker?
+  owner    Owner?
+  tasks    Task[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
 }
 
 model Customer {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String
+  phone     String?
   name      String
-  phone     String   @unique
-
-  requests  Request[]
+  address   String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requests Request[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model Worker {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String
+  phone     String?
+  name      String
+  skills    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[] @relation("WorkerTasks")
+
+  @@index([email])
+  @@index([phone])
+}
+
+model Owner {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String
+  phone     String?
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([phone])
 }
 
 model Request {
-  id            String         @id @default(uuid())
-  customerId    String?
-  customer      Customer?      @relation(fields: [customerId], references: [id])
+  id         String    @id @default(uuid())
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
 
-  source        String         // whatsapp | web
-  status        RequestStatus
-  priority      Int            @default(0)
-  dueBy         DateTime?
+  source   String // whatsapp | web
+  status   RequestStatus
+  priority Int           @default(0)
+  dueBy    DateTime?
 
-  payload       Json           // normalized request payload
-  payloadRaw    Json?
+  payload    Json // normalized request payload
+  payloadRaw Json?
 
-  tasks         Task[]
-  auditLogs     AuditAction[]
+  tasks     Task[]
+  auditLogs AuditAction[]
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Task {
-  id            String     @id @default(uuid())
-  requestId     String
-  request       Request    @relation(fields: [requestId], references: [id])
+  id        String  @id @default(uuid())
+  requestId String
+  request   Request @relation(fields: [requestId], references: [id])
 
-  title         String
-  description   String?
+  title          String
+  description    String?
   requiredSkills String[]
-  estimatedMin  Int
+  estimatedMin   Int
 
-  status        TaskStatus
-  assignedToId  String?
-  assignedTo    User?      @relation("WorkerTasks", fields: [assignedToId], references: [id])
+  status   TaskStatus
+  workerId String?
+  worker   Worker?    @relation("WorkerTasks", fields: [workerId], references: [userId])
 
-  startedAt     DateTime?
-  completedAt   DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
 
-  metadata      Json?
+  metadata Json?
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
 }
 
 model InventoryItem {
-  id            String   @id @default(uuid())
-  sku           String   @unique
-  name          String
-  quantity      Int
-  reorderPoint  Int
+  id           String @id @default(uuid())
+  sku          String @unique
+  name         String
+  quantity     Int
+  reorderPoint Int
 
-  updatedAt     DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 model Supplier {
-  id              String   @id @default(uuid())
-  name            String
-  reliability     Float    // 0..1
-  leadTimeHours   Int
-  orders          SupplierOrder[]
-  createdAt       DateTime @default(now())
+  id            String          @id @default(uuid())
+  name          String
+  reliability   Float // 0..1
+  leadTimeHours Int
+  orders        SupplierOrder[]
+  createdAt     DateTime        @default(now())
 }
 
 model SupplierOrder {
-  id            String   @id @default(uuid())
-  supplierId    String
-  supplier      Supplier @relation(fields: [supplierId], references: [id])
+  id         String   @id @default(uuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
 
-  items         Json     // [{ sku, qty }]
-  eta           DateTime
-  status        String   // placed | delayed | received
+  items  Json // [{ sku, qty }]
+  eta    DateTime
+  status String // placed | delayed | received
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model AuditAction {
-  id          String      @id @default(uuid())
-  requestId   String?
-  request     Request?   @relation(fields: [requestId], references: [id])
+  id        String   @id @default(uuid())
+  requestId String?
+  request   Request? @relation(fields: [requestId], references: [id])
 
-  actor       AuditActor
-  action      String     // assign_task | promise_validate | detect_bottleneck
-  context     Json       // snapshot + scores
-  reason      String?
+  actor   AuditActor
+  action  String // assign_task | promise_validate | detect_bottleneck
+  context Json // snapshot + scores
+  reason  String?
 
-  createdAt   DateTime   @default(now())
+  createdAt DateTime @default(now())
 }
