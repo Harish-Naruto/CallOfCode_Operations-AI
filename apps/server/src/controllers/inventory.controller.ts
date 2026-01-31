@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
+import prisma from "@Hackron/db";
+import { AppError } from "../middleware/error.middleware";
 import type {
     UpdateInventoryRequest,
     SupplierWebhookRequest,
     SuccessResponse,
 } from "../types/types";
-import prisma from "@Hackron/db";
-import { AppError } from "../middleware/error.middleware";
 import { uploadImage } from "../utils/imageUtils";
 import { supabase } from "../config/upload.config";
 
@@ -176,6 +176,42 @@ export class InventoryController {
         };
 
         res.status(200).json(response);
+    }
+
+    /**
+     * POST /api/inventory/bulk
+     * Seeding or bulk upsert of inventory data
+     */
+    async bulkUpsert(req: Request, res: Response): Promise<void> {
+        const items = req.body as any[]; // Expected array of { sku, name, quantity, reorderPoint }
+
+        if (!Array.isArray(items)) {
+            throw new AppError(400, "Body must be an array of inventory items");
+        }
+
+        const results = await Promise.all(
+            items.map(item =>
+                prisma.inventoryItem.upsert({
+                    where: { sku: item.sku },
+                    update: {
+                        name: item.name,
+                        quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) : item.quantity,
+                        reorderPoint: typeof item.reorderPoint === 'string' ? parseInt(item.reorderPoint) : item.reorderPoint,
+                    },
+                    create: {
+                        sku: item.sku,
+                        name: item.name,
+                        quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) : item.quantity,
+                        reorderPoint: typeof item.reorderPoint === 'string' ? parseInt(item.reorderPoint) : item.reorderPoint,
+                    }
+                })
+            )
+        );
+
+        res.status(200).json({
+            success: true,
+            count: results.length
+        });
     }
 
     /**
