@@ -1,9 +1,9 @@
-import "@Hackron/env/web";
-import NextConfig from "next";
+require("@Hackron/env/web");
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   typedRoutes: true,
   reactCompiler: true,
 };
 
-export default nextConfig;
+module.exports = nextConfig;
