@@ -54,7 +54,7 @@ export default function OwnerDashboard() {
     return (
         <ProtectedRoute allowedRoles={[UserRole.OWNER]}>
             {/* Main Background: Kept consistent with your provided screenshot base */}
-            <div className="min-h-screen w-full bg-[#E0F2F1] flex flex-col items-center justify-start p-4 md:p-8 lg:p-12 relative overflow-hidden font-sans">
+            <div className="min-h-screen w-full bg-[#E0F2F1] flex flex-col items-center justify-start p-4 md:p-6 lg:p-8 relative overflow-hidden font-sans">
 
                 {/* Subtle Kinetic Accents using the palette */}
                 <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[120px] pointer-events-none" />
@@ -64,7 +64,7 @@ export default function OwnerDashboard() {
                 <motion.header
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="w-full max-w-7xl bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] px-8 py-4 mb-8 flex flex-col md:flex-row justify-between items-center shadow-[0_8px_32px_rgba(0,123,182,0.05)]"
+                    className="w-full max-w-7xl bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] px-8 py-4 mb-6 flex flex-col md:flex-row justify-between items-center shadow-[0_8px_32px_rgba(0,123,182,0.05)]"
                 >
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-[#001D29] rounded-2xl shadow-lg">
@@ -96,12 +96,12 @@ export default function OwnerDashboard() {
                     variants={staggerContainer}
                     initial="hidden"
                     animate="visible"
-                    className="w-full max-w-7xl grid lg:grid-cols-12 gap-8 items-start"
+                    className="w-full max-w-7xl grid lg:grid-cols-12 gap-6 items-start"
                 >
                     {/* LEFT COLUMN: Identity Monolith (Styled like your login left panel) */}
                     <motion.section
                         variants={itemVariants}
-                        className="lg:col-span-4 bg-[#001D29] rounded-[3rem] p-10 flex flex-col justify-between shadow-2xl relative overflow-hidden min-h-[600px]"
+                        className="lg:col-span-4 bg-[#001D29] rounded-[3rem] p-10 flex flex-col justify-between shadow-2xl relative overflow-hidden min-h-[500px]"
                     >
                         <div className="relative z-10 space-y-12">
                             <div className="relative inline-block">
@@ -149,27 +149,8 @@ export default function OwnerDashboard() {
                     </motion.section>
 
                     {/* RIGHT COLUMN: Interaction Module */}
-                    <div className="lg:col-span-8 space-y-8">
-                        {/* UNASSIGNED TASKS ALERT SECTION */}
-                        {unassignedTasks.length > 0 && (
-                            <motion.section variants={itemVariants} className="bg-amber-500/10 border border-amber-500/20 rounded-[2.5rem] p-8">
-                                <h3 className="text-xl font-serif font-bold italic text-amber-700 tracking-wide mb-6 flex items-center gap-2">
-                                    <Bell className="w-6 h-6 animate-bounce" />
-                                    Action Required ({unassignedTasks.length})
-                                </h3>
-                                <div className="space-y-4">
-                                    {unassignedTasks.map(task => (
-                                        <QuickAssignCard
-                                            key={task.id}
-                                            task={task}
-                                            workers={workers}
-                                            onAssign={() => window.location.reload()}
-                                            viewDetail={() => router.push(`/owner/requests/${task.requestId}`)}
-                                        />
-                                    ))}
-                                </div>
-                            </motion.section>
-                        )}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* GOVERNANCE PANEL - Always shown first to align with left card */}
                         <motion.section variants={itemVariants} className="space-y-6">
                             <div className="flex items-center justify-between px-2">
                                 <h3 className="text-xl font-serif font-bold italic text-[#001D29] tracking-wide">Governance Panel</h3>
@@ -256,6 +237,27 @@ export default function OwnerDashboard() {
                                 ))}
                             </div>
                         </motion.div>
+
+                        {/* UNASSIGNED TASKS ALERT SECTION - Moved to bottom */}
+                        {unassignedTasks.length > 0 && (
+                            <motion.section variants={itemVariants} className="bg-amber-500/10 border border-amber-500/20 rounded-[2.5rem] p-6">
+                                <h3 className="text-xl font-serif font-bold italic text-amber-700 tracking-wide mb-6 flex items-center gap-2">
+                                    <Bell className="w-6 h-6 animate-bounce" />
+                                    Action Required ({unassignedTasks.length})
+                                </h3>
+                                <div className="space-y-4">
+                                    {unassignedTasks.map(task => (
+                                        <QuickAssignCard
+                                            key={task.id}
+                                            task={task}
+                                            workers={workers}
+                                            onAssign={() => window.location.reload()}
+                                            viewDetail={() => router.push(`/owner/requests/${task.requestId}`)}
+                                        />
+                                    ))}
+                                </div>
+                            </motion.section>
+                        )}
                     </div>
                 </motion.main>
             </div>

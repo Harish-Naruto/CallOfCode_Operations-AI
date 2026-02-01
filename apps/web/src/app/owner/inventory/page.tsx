@@ -24,7 +24,7 @@ export default function CustomerInventoryPage() {
         try {
             setIsLoading(true);
             const data = await inventoryService.getInventoryItems();
-            setItems(data.filter(item => item.quantity > 0)); 
+            setItems(data.filter(item => item.quantity > 0));
         } catch (error) {
             console.error("Failed to load inventory:", error);
         } finally {
@@ -85,14 +85,14 @@ export default function CustomerInventoryPage() {
             {/* FIX: Removed 'overflow-y-auto' from this div to prevent the double scrollbar. 
                 The browser will now use the global scrollbar for the page. */}
             <div className="min-h-screen w-full bg-[#E0F2F1] flex flex-col items-center justify-start p-4 md:p-8 lg:p-12 relative font-sans selection:bg-[#00B4D8] selection:text-white">
-                
-                {/* Background Aesthetic Orbs */}
-                <div className="fixed top-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[120px] pointer-events-none" />
-                <div className="fixed bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#0077B6]/10 rounded-full blur-[100px] pointer-events-none" />
 
-                <div className="w-full max-w-7xl relative z-10">
+                {/* Background Aesthetic Orbs */}
+                <div className="fixed top-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[120px] pointer-events-none z-[1]" />
+                <div className="fixed bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#0077B6]/10 rounded-full blur-[100px] pointer-events-none z-[1]" />
+
+                <div className="w-full max-w-7xl relative z-20">
                     {/* Glass Executive Header */}
-                    <motion.header 
+                    <motion.header
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         className="w-full bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] px-8 py-4 mb-12 flex flex-col md:flex-row justify-between items-center shadow-[0_8px_32px_rgba(0,123,182,0.05)]"
@@ -191,7 +191,7 @@ export default function CustomerInventoryPage() {
                                             <p className="text-sm font-black text-[#0077B6]">{item.quantity} Units</p>
                                         </div>
 
-                                    
+
                                     </div>
                                 </motion.div>
                             ))}
@@ -201,8 +201,8 @@ export default function CustomerInventoryPage() {
                     {/* Footer Branding */}
                     {!isLoading && items.length > 0 && (
                         <div className="mt-20 flex flex-col items-center gap-4 opacity-[0.05] pointer-events-none select-none">
-                             <Sparkles className="w-8 h-8 text-[#001D29]" />
-                             <span className="text-6xl font-serif font-black italic text-[#001D29] uppercase tracking-tighter">Textile Network</span>
+                            <Sparkles className="w-8 h-8 text-[#001D29]" />
+                            <span className="text-6xl font-serif font-black italic text-[#001D29] uppercase tracking-tighter">Textile Network</span>
                         </div>
                     )}
 

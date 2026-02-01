@@ -16,7 +16,7 @@ export default function Home() {
   useEffect(() => {
     // 1. Mark as mounted to prevent hydration errors
     setIsMounted(true);
-    
+
     // 2. Trigger curtain reveal after a small delay
     const timer = setTimeout(() => setIsRevealed(true), 800);
     return () => clearTimeout(timer);
@@ -29,15 +29,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-[#E0F2F1] text-[#001D29] relative font-sans selection:bg-[#00B4D8] selection:text-white">
-      
+
       {/* --- CREATIVE CURTAIN ENTRANCE --- */}
       <AnimatePresence mode="wait">
         {!isRevealed && (
-          <motion.div 
+          <motion.div
             key="curtain"
-            className="fixed inset-0 z-[100] flex"
+            className="fixed inset-0 z-[50] flex"
           >
-            <motion.div 
+            <motion.div
               initial={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 1.2, ease: [0.87, 0, 0.13, 1] }}
@@ -45,7 +45,7 @@ export default function Home() {
             >
               <h2 className="text-[#48CAE4] font-serif italic text-4xl">MSME</h2>
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 1.2, ease: [0.87, 0, 0.13, 1] }}
@@ -58,36 +58,36 @@ export default function Home() {
       </AnimatePresence>
 
       {/* --- AMBIENT BACKGROUND --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <motion.div 
-          animate={{ 
+      <div className="fixed inset-0 z-[1] pointer-events-none">
+        <motion.div
+          animate={{
             scale: [1, 1.2, 1],
             rotate: [0, 90, 0],
             x: [0, 50, 0]
           }}
           transition={{ duration: 20, repeat: Infinity }}
-          className="absolute -top-[10%] -left-[5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[120px]" 
+          className="absolute -top-[10%] -left-[5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[120px]"
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.3, 1],
             x: [0, -40, 0],
             y: [0, 60, 0]
           }}
           transition={{ duration: 15, repeat: Infinity }}
-          className="absolute bottom-[-10%] -right-[5%] w-[500px] h-[500px] bg-[#0077B6]/10 rounded-full blur-[100px]" 
+          className="absolute bottom-[-10%] -right-[5%] w-[500px] h-[500px] bg-[#0077B6]/10 rounded-full blur-[100px]"
         />
       </div>
 
       {/* --- CONTENT WRAPPER --- */}
-      <div className="relative z-10 w-full">
+      <div className="relative z-10 w-full overflow-x-hidden">
         {/* HERO SECTION */}
         <section className="pt-32 pb-20 px-6">
           <div className="container mx-auto max-w-6xl">
             <div className="flex flex-col lg:flex-row items-center gap-16">
-              
+
               {/* Left Content */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={isRevealed ? { opacity: 1, x: 0 } : {}}
                 transition={{ delay: 0.5, duration: 0.8 }}
@@ -104,7 +104,7 @@ export default function Home() {
                 </h1>
 
                 <p className="text-lg text-[#001D29]/60 max-w-xl leading-relaxed">
-                  Autonomous management for the garment industry. We don't just suggest — 
+                  Autonomous management for the garment industry. We don't just suggest —
                   we decide, execute, and verify your entire workflow.
                 </p>
 
@@ -119,7 +119,7 @@ export default function Home() {
               </motion.div>
 
               {/* Right Visual Monolith */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 100, rotateY: 30 }}
                 animate={isRevealed ? { opacity: 1, y: 0, rotateY: 0 } : {}}
                 transition={{ delay: 0.7, duration: 1 }}
@@ -137,8 +137,8 @@ export default function Home() {
                 <div className="space-y-4">
                   <div className="h-[1px] w-full bg-white/10" />
                   <div className="flex justify-between items-end">
-                     <Compass className="w-12 h-12 text-[#48CAE4] opacity-40" />
-                     <p className="text-[10px] text-white/30 text-right uppercase font-bold leading-tight">Digital <br/> Textile Node</p>
+                    <Compass className="w-12 h-12 text-[#48CAE4] opacity-40" />
+                    <p className="text-[10px] text-white/30 text-right uppercase font-bold leading-tight">Digital <br /> Textile Node</p>
                   </div>
                 </div>
                 <Layers className="absolute -bottom-10 -left-10 w-64 h-64 text-white/5 -rotate-12 pointer-events-none" />
