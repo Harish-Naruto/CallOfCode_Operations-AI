@@ -170,7 +170,7 @@ export default function OwnerDashboard() {
                                 </button>
 
                                 {/* Other Controls (Mini Grid) */}
-                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {[
   {
     title: "Inventory",
@@ -178,12 +178,7 @@ export default function OwnerDashboard() {
     desc: "Track Stock",
     onClick: () => router.push("/owner/inventory"),
   },
-  {
-    title: "AI Rules",
-    icon: Settings,
-    desc: "Decision Engine",
-    onClick: () => router.push("/owner/rules"),
-  },
+  
   {
     title: "Audit Trail",
     icon: FileSearch,
