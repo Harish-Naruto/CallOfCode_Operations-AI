@@ -5,7 +5,7 @@ services:
     container_name: hackron-backend
     build:
       context: .
-      dockerfile: docker/hackron-backend.dockerfile
+      dockerfile: docker/Dockerfile.server
     env_file:
       - apps/server/.env
     ports:
@@ -18,7 +18,7 @@ services:
     container_name: hackron-frontend
     build:
       context: .
-      dockerfile: docker/web.dockerfile
+      dockerfile: docker/Dockerfile.web
     env_file:
       - apps/web/.env
     ports:

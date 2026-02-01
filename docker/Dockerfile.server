@@ -1,0 +1,23 @@
+FROM oven/bun:1.2.21 AS base
+WORKDIR /var/www/hackron-server
+
+RUN bun add -g turbo
+FROM base AS deps
+
+COPY ./turbo.json ./
+COPY ./package.json ./bun.lock ./
+COPY apps ./apps
+COPY packages ./packages
+
+# Install all workspace deps
+RUN bun install --lockfile
+
+
+# Build only server and its dependencies
+RUN bunx turbo db:generate
+RUN bunx turbo build --filter=server...
+
+WORKDIR /apps/server
+EXPOSE 3000
+
+CMD ["bun", "dist/index.js"]
