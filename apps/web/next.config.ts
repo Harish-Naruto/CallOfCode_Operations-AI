@@ -1,5 +1,5 @@
 import "@Hackron/env/web";
-import type { NextConfig } from "next";
+import NextConfig from "next";
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
