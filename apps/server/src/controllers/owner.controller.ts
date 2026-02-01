@@ -6,8 +6,11 @@ import type {
     ForceAssignRequest,
     DecisionRulesConfig,
     SuccessResponse,
+    UnassignedTask,
 } from "../types/types";
-import { RequestStatus, AuditActor } from "../types/types";
+import { RequestStatus, AuditActor, TaskStatus } from "../types/types";
+import { workerService } from "../services/worker.service";
+import prisma from "@Hackron/db";
 
 /**
  * Owner Controller - Handles owner dashboard endpoints
@@ -56,6 +59,51 @@ export class OwnerController {
         const ownerId = req.user!.id;
 
         await requestService.forceAssign(requestId, workerId, reason, ownerId);
+
+        const response: SuccessResponse = {
+            success: true,
+        };
+
+        res.status(200).json(response);
+    }
+
+    /**
+     * POST /api/owner/tasks/:taskId/assign
+     * Force assign specific task to worker
+     */
+    async assignTask(req: Request, res: Response): Promise<void> {
+        const taskId = req.params.taskId as string;
+        const { workerId, reason } = req.body as ForceAssignRequest;
+        const ownerId = req.user!.id;
+
+        // Use prisma directly for task-level update
+        await prisma.$transaction(async (tx) => {
+            await tx.task.update({
+                where: { id: taskId },
+                data: {
+                    workerId: workerId,
+                    status: TaskStatus.ASSIGNED,
+                },
+            });
+
+            // Get task to find requestId for audit
+            const task = await tx.task.findUnique({
+                where: { id: taskId },
+                select: { requestId: true }
+            });
+
+            if (task) {
+                await tx.auditAction.create({
+                    data: {
+                        requestId: task.requestId,
+                        actor: AuditActor.OWNER,
+                        action: 'force_assign_task',
+                        context: { taskId, workerId, ownerId } as any,
+                        reason,
+                    },
+                });
+            }
+        });
 
         const response: SuccessResponse = {
             success: true,
@@ -122,6 +170,48 @@ export class OwnerController {
         const result = await auditService.queryAuditLogs(filters);
 
         res.status(200).json(result);
+    }
+
+    /**
+     * GET /api/owner/workers
+     * List all workers with their status and load
+     */
+    async listWorkers(_req: Request, res: Response): Promise<void> {
+        const workers = await workerService.listWorkersWithStatus();
+        res.status(200).json(workers);
+    }
+
+    /**
+     * GET /api/owner/tasks/unassigned
+     * Get tasks that are unassigned or escalated
+     */
+    async getUnassignedTasks(_req: Request, res: Response): Promise<void> {
+        // Fetch tasks that are PENDING (no worker) OR BLOCKED (needs intervention)
+        const tasks = await prisma.task.findMany({
+            where: {
+                OR: [
+                    { status: TaskStatus.PENDING, workerId: null },
+                    { status: TaskStatus.BLOCKED }
+                ]
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        const response: UnassignedTask[] = tasks.map(t => ({
+            id: t.id,
+            requestId: t.requestId,
+            title: t.title,
+            priority: 1,
+            requiredSkills: t.requiredSkills,
+            createdAt: t.createdAt.toISOString(),
+            reason: t.status === TaskStatus.BLOCKED
+                ? "Task Blocked - Manual Intervention Required"
+                : "Agent could not find suitable worker"
+        }));
+
+        res.status(200).json(response);
     }
 }
 

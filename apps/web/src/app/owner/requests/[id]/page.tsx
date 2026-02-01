@@ -6,12 +6,14 @@ import ProtectedRoute from "@/components/auth/protected-route";
 import { UserRole } from "@/lib/types/auth";
 import apiClient from "@/lib/api/client";
 import { motion } from "framer-motion";
-import { 
-  User, ClipboardList, ShieldAlert, Clock, 
-  ArrowLeft, CheckCircle2, Hash, Layers, 
+import {
+  User, ClipboardList, ShieldAlert, Clock,
+  ArrowLeft, CheckCircle2, Hash, Layers,
   UserCheck, Activity, Compass
 } from "lucide-react";
 import Link from "next/link";
+import { ownerService } from "@/lib/api/owner.service";
+import type { WorkerSummary } from "@/lib/api/owner.service";
 
 type RequestDetailResponse = {
   request: {
@@ -60,7 +62,7 @@ export default function OwnerRequestDetailPage() {
       </div>
     </div>
   );
-  
+
   if (!data) return (
     <div className="min-h-screen bg-[#E0F2F1] flex items-center justify-center text-[#001D29] font-serif font-bold italic">
       Node Reference Not Found.
@@ -73,12 +75,12 @@ export default function OwnerRequestDetailPage() {
     <ProtectedRoute allowedRoles={[UserRole.OWNER]}>
       {/* FIX: Changed overflow-hidden to overflow-y-auto to allow scrolling */}
       <div className="min-h-screen w-full bg-[#E0F2F1] overflow-y-auto custom-scrollbar relative font-sans">
-        
+
         {/* Background Aesthetic Orbs */}
         <div className="fixed top-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[140px] pointer-events-none" />
         <div className="fixed bottom-[-5%] right-[-5%] w-[400px] h-[400px] bg-[#0077B6]/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-6xl mx-auto p-4 md:p-10 lg:p-14 space-y-8 relative z-10"
@@ -100,7 +102,7 @@ export default function OwnerRequestDetailPage() {
           </div>
 
           <div className="grid lg:grid-cols-12 gap-8">
-            
+
             {/* LEFT: Request Identity Module */}
             <div className="lg:col-span-4 space-y-8">
               <section className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-[3rem] p-10 shadow-xl">
@@ -109,14 +111,13 @@ export default function OwnerRequestDetailPage() {
                     <Hash className="w-4 h-4 opacity-40 mb-1" />
                     <span className="text-xl font-black">{request.id.toString().slice(-3)}</span>
                   </div>
-                  
+
                   <div>
                     <h1 className="text-3xl font-serif font-black text-[#001D29] tracking-tighter italic">Data Node</h1>
-                    <div className={`mt-3 inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${
-                      request.status.toLowerCase() === 'pending' 
-                      ? 'bg-amber-50 text-amber-600 border-amber-100' 
+                    <div className={`mt-3 inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${request.status.toLowerCase() === 'pending'
+                      ? 'bg-amber-50 text-amber-600 border-amber-100'
                       : 'bg-[#E0F2F1] text-[#0077B6] border-[#CAF0F8]'
-                    }`}>
+                      }`}>
                       {request.status}
                     </div>
                   </div>
@@ -139,16 +140,19 @@ export default function OwnerRequestDetailPage() {
               </section>
 
               <div className="p-8 border-2 border-dashed border-[#00B4D8]/20 rounded-[2.5rem] flex flex-col items-center text-center bg-white/10">
-                  <Activity className="w-6 h-6 text-[#00B4D8] mb-3 opacity-50" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00B4D8]">
-                      Integrity Monitor Active
-                  </p>
+                <Activity className="w-6 h-6 text-[#00B4D8] mb-3 opacity-50" />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00B4D8]">
+                  Integrity Monitor Active
+                </p>
               </div>
             </div>
 
             {/* RIGHT: Tasks & Audit Intelligence */}
             <div className="lg:col-span-8 space-y-8">
-              
+
+              {/* MANUAL ASSIGNMENT UI - Correctly placed here */}
+              <ManualAssignment requestId={request.id.toString()} />
+
               {/* Tasks Module */}
               <section className="bg-[#001D29] rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
                 <div className="relative z-10 space-y-8">
@@ -195,7 +199,7 @@ export default function OwnerRequestDetailPage() {
                   {auditActions.map((log) => (
                     <div key={log.id} className="relative pl-8 border-l-2 border-[#00B4D8]/20 group">
                       <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-[#00B4D8] shadow-[0_0_10px_rgba(0,180,216,0.5)] group-hover:scale-150 transition-transform" />
-                      
+
                       <div className="space-y-2">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                           <p className="text-sm font-bold text-[#001D29] uppercase tracking-wide">{log.action}</p>
@@ -204,7 +208,7 @@ export default function OwnerRequestDetailPage() {
                             {new Date(log.createdAt).toLocaleString()}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-[10px] text-[#001D29]/40 font-black uppercase tracking-[0.2em]">
                           Actor Instance: {log.actor}
                         </div>
@@ -224,7 +228,6 @@ export default function OwnerRequestDetailPage() {
         </motion.div>
       </div>
 
-      {/* Global Scrollbar Theme matching the provided Blue palette */}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -241,5 +244,81 @@ export default function OwnerRequestDetailPage() {
         }
       `}</style>
     </ProtectedRoute>
+  );
+}
+
+function ManualAssignment({ requestId }: { requestId: string }) {
+  const [workers, setWorkers] = useState<WorkerSummary[]>([]);
+  const [selectedWorker, setSelectedWorker] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    ownerService
+      .listWorkers()
+      .then(setWorkers)
+      .catch(console.error)
+      .finally(() => setFetching(false));
+  }, []);
+
+  const handleAssign = async () => {
+    if (!selectedWorker) return;
+    setLoading(true);
+    try {
+      await ownerService.forceAssign(requestId, selectedWorker, "Manual override by owner");
+      window.location.reload();
+    } catch (err) {
+      console.error("Assignment failed", err);
+      alert("Failed to assign worker");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="bg-amber-500/10 border border-amber-500/30 rounded-[3rem] p-10 shadow-lg relative overflow-hidden">
+      <div className="relative z-10">
+        <h3 className="text-xl font-serif font-bold italic text-[#001D29] mb-6 flex items-center gap-3">
+          <ShieldAlert className="w-6 h-6 text-amber-600" />
+          <span>Manual Force Override</span>
+        </h3>
+
+        <div className="bg-white/60 p-6 rounded-2xl flex flex-col md:flex-row gap-4 items-end md:items-center">
+          <div className="flex-1 w-full space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-[#0077B6] pl-1">Target Artisan Node</label>
+            <select
+              value={selectedWorker}
+              onChange={(e) => setSelectedWorker(e.target.value)}
+              disabled={fetching}
+              className="w-full p-4 rounded-xl bg-white border-2 border-transparent focus:border-[#00B4D8] text-[#001D29] font-bold outline-none transition-all shadow-sm"
+            >
+              <option value="">{fetching ? "Syncing Network..." : "Select Available Worker..."}</option>
+              {workers.map(w => (
+                <option key={w.id} value={w.id}>
+                  {w.name} — {w.status} ({w.activeTaskCount} active)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={handleAssign}
+            disabled={!selectedWorker || loading}
+            className="w-full md:w-auto px-8 py-4 bg-[#001D29] text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-[#0077B6] hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-xl"
+          >
+            {loading ? "Re-Routing..." : "Execute Assign"}
+          </button>
+        </div>
+
+        <p className="mt-4 text-[10px] font-bold text-amber-800/60 uppercase tracking-widest text-center md:text-left ml-1">
+          * This action bypasses the autonomous agent's decision matrix.
+        </p>
+      </div>
+
+      {/* Background Graphic */}
+      <div className="absolute right-[-2rem] top-[-4rem] opacity-5 pointer-events-none select-none">
+        <Activity className="w-64 h-64 text-amber-900 rotate-12" />
+      </div>
+    </section>
   );
 }
