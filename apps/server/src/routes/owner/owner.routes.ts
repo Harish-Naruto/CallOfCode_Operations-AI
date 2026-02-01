@@ -45,6 +45,17 @@ router.post(
 );
 
 /**
+ * @route   POST /api/owner/tasks/:taskId/assign
+ * @desc    Force assign specific task to worker
+ * @access  Owner
+ */
+router.post(
+    "/tasks/:taskId/assign",
+    validate(forceAssignSchema),
+    (req, res, next) => ownerController.assignTask(req, res).catch(next),
+);
+
+/**
  * @route   PUT /api/owner/config/decision-rules
  * @desc    Update decision rules
  * @access  Owner
@@ -62,6 +73,25 @@ router.put(
  */
 router.get("/audit", (req, res, next) =>
     ownerController.getAuditLogs(req, res).catch(next),
+);
+
+
+/**
+ * @route   GET /api/owner/workers
+ * @desc    List all workers with status
+ * @access  Owner
+ */
+router.get("/workers", (req, res, next) =>
+    ownerController.listWorkers(req, res).catch(next),
+);
+
+/**
+ * @route   GET /api/owner/tasks/unassigned
+ * @desc    Get unassigned tasks
+ * @access  Owner
+ */
+router.get("/tasks/unassigned", (req, res, next) =>
+    ownerController.getUnassignedTasks(req, res).catch(next),
 );
 
 export default router;

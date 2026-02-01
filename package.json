@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@Hackron/env": "workspace:*",
+    "@radix-ui/react-dialog": "^1.1.15",
     "dotenv": "catalog:",
     "framer-motion": "^12.29.2",
     "zod": "catalog:"

@@ -143,58 +143,40 @@ export default function WorkerDashboard() {
                                     <div className="h-[1px] flex-1 bg-[#001D29]/10 mx-6" />
                                 </div>
                                 
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    {/* View Tasks Button */}
-                                    <button 
-                                        onClick={() => {
-                                            const tasksSection = document.getElementById('tasks-section');
-                                            tasksSection?.scrollIntoView({ behavior: 'smooth' });
-                                        }}
-                                        className="group relative p-6 bg-[#0077B6] rounded-[2rem] shadow-xl shadow-[#0077B6]/20 transition-all hover:scale-[1.02] active:scale-98 overflow-hidden text-left"
-                                    >
-                                        <div className="relative z-10 flex flex-col h-full justify-between">
-                                            <ClipboardList className="w-8 h-8 text-[#48CAE4] mb-6 transition-transform group-hover:rotate-6" />
-                                            <div>
-                                                <h4 className="text-xl font-black text-white uppercase leading-none tracking-tighter">My Tasks</h4>
-                                                <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#48CAE4] opacity-80">View & Manage</p>
-                                            </div>
-                                        </div>
-                                        <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-white/30 group-hover:translate-x-2 transition-transform" />
-                                    </button>
+                            
+<div className="flex flex-col sm:flex-row gap-6 w-full h-full">
+    {/* My Tasks Terminal Block */}
+    <button 
+        onClick={() => router.push("/worker/tasks")}
+        className="group relative flex-1 min-h-[220px] p-8 bg-[#0077B6] border border-white/5 rounded-[2.5rem] shadow-2xl transition-all hover:scale-[1.02] active:scale-95 overflow-hidden text-left"
+    >
+        {/* Visual Background Gradient consistent with your palette */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0077B6]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="p-4 bg-white/5 rounded-2xl w-fit group-hover:bg-[#00B4D8] transition-colors duration-300">
+                <ClipboardList className="w-8 h-8 text-[#48CAE4] group-hover:text-[#001D29] transition-transform group-hover:rotate-6" />
+            </div>
+            
+            <div>
+                <h4 className="text-2xl font-black text-white uppercase leading-none tracking-tighter">
+                    My Tasks
+                </h4>
+                <p className="mt-3 text-[10px] font-black uppercase tracking-[0.3em] text-[#00B4D8] opacity-80">
+                    Artisan Queue v.2026
+                </p>
+            </div>
+        </div>
 
-                                    {/* Work Schedule */}
-                                    <button className="group relative p-6 bg-white border border-[#001D29]/5 rounded-[2rem] shadow-lg shadow-[#001D29]/05 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-98 text-left">
-                                        <Calendar className="w-8 h-8 text-[#0077B6] mb-6 group-hover:scale-110 transition-transform" />
-                                        <div>
-                                            <h4 className="text-xl font-black text-[#001D29] uppercase leading-none tracking-tighter">Schedule</h4>
-                                            <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#0077B6]">Set Availability</p>
-                                        </div>
-                                    </button>
-                                </div>
-
-                                {/* History Archive Module */}
-                                <div className="bg-white/60 backdrop-blur-sm border border-[#001D29]/10 rounded-[2rem] p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-[#001D29] rounded-xl">
-                                            <History className="w-6 h-6 text-[#48CAE4]" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-[#001D29] uppercase tracking-tight">Task History</h4>
-                                            <p className="text-xs text-[#001D29]/60 font-medium">Review completed records</p>
-                                        </div>
-                                    </div>
-                                    <button className="px-6 py-2 bg-[#001D29] text-[#48CAE4] rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#0077B6] hover:text-white transition-all">
-                                        View Archive
-                                    </button>
-                                </div>
+        {/* Decorative element from your brand identity */}
+        <div className="absolute -bottom-4 -right-4 p-8 bg-[#48CAE4]/10 rounded-full group-hover:scale-110 transition-transform duration-500">
+            <ArrowRight className="w-6 h-6 text-[#48CAE4]" />
+        </div>
+    </button>
+</div>
                             </motion.section>
                         </div>
                     </div>
-
-                    {/* Full-Width Task Management Section */}
-                    <motion.div variants={itemVariants} id="tasks-section" className="w-full">
-                        <TaskList />
-                    </motion.div>
 
                     {/* System Health Decor */}
                     <motion.div variants={itemVariants} className="flex justify-center gap-2 opacity-40 py-4">

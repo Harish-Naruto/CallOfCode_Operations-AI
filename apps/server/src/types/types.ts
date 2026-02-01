@@ -46,11 +46,11 @@ export type AlterationType =
 export type RequestType = "alteration" | "order" | "stitching";
 
 export type UserProfile = {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: UserRole;
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    role: UserRole;
 };
 
 
@@ -141,6 +141,26 @@ export interface SetAvailabilityRequest {
 export interface ForceAssignRequest {
     workerId: string;
     reason: string;
+}
+
+export interface WorkerSummary {
+    id: string;
+    name: string;
+    email: string;
+    role: "WORKER";
+    skills: string[];
+    status: "IDLE" | "BUSY" | "OFFLINE";
+    activeTaskCount: number;
+}
+
+export interface UnassignedTask {
+    id: string;
+    requestId: string;
+    title: string;
+    priority: number;
+    requiredSkills: string[];
+    createdAt: string;
+    reason?: string; // Why it's unassigned/escalated
 }
 
 export interface DecisionRulesConfig {

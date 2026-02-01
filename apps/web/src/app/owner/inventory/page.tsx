@@ -58,7 +58,7 @@ export default function CustomerInventoryPage() {
             const response = await customerService.createRequest({ payload });
             alert(`Order placed successfully! Request ID: ${response.requestId}`);
             setIsModalOpen(false);
-            router.push("/customer/dashboard" as any);
+            router.push("/owner/dashboard");
         } catch (error) {
             console.error("Failed to create order:", error);
             alert("Failed to place order. Please try again.");
@@ -81,7 +81,7 @@ export default function CustomerInventoryPage() {
     };
 
     return (
-        <ProtectedRoute allowedRoles={[UserRole.CUSTOMER]}>
+        <ProtectedRoute allowedRoles={[UserRole.OWNER, UserRole.CUSTOMER]}>
             {/* FIX: Removed 'overflow-y-auto' from this div to prevent the double scrollbar. 
                 The browser will now use the global scrollbar for the page. */}
             <div className="min-h-screen w-full bg-[#E0F2F1] flex flex-col items-center justify-start p-4 md:p-8 lg:p-12 relative font-sans selection:bg-[#00B4D8] selection:text-white">
@@ -191,13 +191,7 @@ export default function CustomerInventoryPage() {
                                             <p className="text-sm font-black text-[#0077B6]">{item.quantity} Units</p>
                                         </div>
 
-                                        <button
-                                            onClick={() => handleOrder(item)}
-                                            className="w-full py-5 bg-[#001D29] text-[#48CAE4] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-xl hover:bg-[#0077B6] hover:text-white transition-all active:scale-95 flex items-center justify-center gap-3 group"
-                                        >
-                                            <ShoppingCart className="w-4 h-4 group-hover:-translate-y-1 transition-transform" />
-                                            Book Order
-                                        </button>
+                                    
                                     </div>
                                 </motion.div>
                             ))}

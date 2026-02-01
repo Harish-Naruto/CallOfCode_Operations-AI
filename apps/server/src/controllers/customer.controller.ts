@@ -91,6 +91,17 @@ export class CustomerController {
         const requests = await requestService.getRequestsForUser(userId);
         res.status(200).json(requests);
     }
+
+    /**
+    * GET /api/requests/:requestId
+    * Get full request details
+    */
+    async getRequestDetail(req: Request, res: Response): Promise<void> {
+        const requestId = req.params.requestId as string;
+        // Ideally should check if this request belongs to the user
+        const detail = await requestService.getRequestDetail(requestId);
+        res.status(200).json(detail);
+    }
 }
 
 export const customerController = new CustomerController();

@@ -4,10 +4,11 @@ import ProtectedRoute from "@/components/auth/protected-route";
 import { UserRole } from "@/lib/types/auth";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useRouter } from "next/navigation";
+import React from "react";
 import { motion } from "framer-motion";
-import { 
-    LogOut, User, Mail, Phone, Shield, 
-    Settings, Users, BarChart3, Database, 
+import {
+    LogOut, User, Mail, Phone, Shield,
+    Settings, Users, BarChart3, Database,
     FileSearch, Bell, Search, Compass, Sparkles,
     Activity, ArrowRight, Layers
 } from "lucide-react";
@@ -16,6 +17,20 @@ export default function OwnerDashboard() {
     // --- YOUR LOGIC: UNTOUCHED ---
     const { user, logout } = useAuth();
     const router = useRouter();
+    const [unassignedTasks, setUnassignedTasks] = React.useState<any[]>([]);
+    const [workers, setWorkers] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+        import("@/lib/api/owner.service").then(({ ownerService }) => {
+            Promise.all([
+                ownerService.getUnassignedTasks(),
+                ownerService.listWorkers()
+            ]).then(([tasks, allWorkers]) => {
+                setUnassignedTasks(tasks);
+                setWorkers(allWorkers);
+            }).catch(console.error);
+        });
+    }, []);
 
     const handleLogout = async () => {
         await logout();
@@ -40,13 +55,13 @@ export default function OwnerDashboard() {
         <ProtectedRoute allowedRoles={[UserRole.OWNER]}>
             {/* Main Background: Kept consistent with your provided screenshot base */}
             <div className="min-h-screen w-full bg-[#E0F2F1] flex flex-col items-center justify-start p-4 md:p-8 lg:p-12 relative overflow-hidden font-sans">
-                
+
                 {/* Subtle Kinetic Accents using the palette */}
                 <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#00B4D8]/10 rounded-full blur-[120px] pointer-events-none" />
                 <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#0077B6]/10 rounded-full blur-[100px] pointer-events-none" />
 
                 {/* --- Executive Glass Header --- */}
-                <motion.header 
+                <motion.header
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     className="w-full max-w-7xl bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] px-8 py-4 mb-8 flex flex-col md:flex-row justify-between items-center shadow-[0_8px_32px_rgba(0,123,182,0.05)]"
@@ -66,7 +81,7 @@ export default function OwnerDashboard() {
                             <Activity className="w-3 h-3 text-[#0077B6] animate-pulse" />
                             <span className="text-[9px] font-bold text-[#0077B6] uppercase tracking-widest">Real-time Node: Active</span>
                         </div>
-                        <button 
+                        <button
                             onClick={handleLogout}
                             className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#001D29] hover:text-[#0077B6] transition-colors group"
                         >
@@ -77,14 +92,14 @@ export default function OwnerDashboard() {
                 </motion.header>
 
                 {/* --- Main Grid Architecture --- */}
-                <motion.main 
+                <motion.main
                     variants={staggerContainer}
                     initial="hidden"
                     animate="visible"
                     className="w-full max-w-7xl grid lg:grid-cols-12 gap-8 items-start"
                 >
                     {/* LEFT COLUMN: Identity Monolith (Styled like your login left panel) */}
-                    <motion.section 
+                    <motion.section
                         variants={itemVariants}
                         className="lg:col-span-4 bg-[#001D29] rounded-[3rem] p-10 flex flex-col justify-between shadow-2xl relative overflow-hidden min-h-[600px]"
                     >
@@ -135,19 +150,42 @@ export default function OwnerDashboard() {
 
                     {/* RIGHT COLUMN: Interaction Module */}
                     <div className="lg:col-span-8 space-y-8">
+                        {/* UNASSIGNED TASKS ALERT SECTION */}
+                        {unassignedTasks.length > 0 && (
+                            <motion.section variants={itemVariants} className="bg-amber-500/10 border border-amber-500/20 rounded-[2.5rem] p-8">
+                                <h3 className="text-xl font-serif font-bold italic text-amber-700 tracking-wide mb-6 flex items-center gap-2">
+                                    <Bell className="w-6 h-6 animate-bounce" />
+                                    Action Required ({unassignedTasks.length})
+                                </h3>
+                                <div className="space-y-4">
+                                    {unassignedTasks.map(task => (
+                                        <QuickAssignCard
+                                            key={task.id}
+                                            task={task}
+                                            workers={workers}
+                                            onAssign={() => window.location.reload()}
+                                            viewDetail={() => router.push(`/owner/requests/${task.requestId}`)}
+                                        />
+                                    ))}
+                                </div>
+                            </motion.section>
+                        )}
                         <motion.section variants={itemVariants} className="space-y-6">
                             <div className="flex items-center justify-between px-2">
                                 <h3 className="text-xl font-serif font-bold italic text-[#001D29] tracking-wide">Governance Panel</h3>
                                 <div className="h-[1px] flex-1 bg-[#001D29]/10 mx-6" />
                             </div>
-                            
+
                             <div className="grid md:grid-cols-2 gap-6">
                                 {/* Primary Action: Styled with palette electric blue */}
-                                <button className="group relative p-8 bg-[#0077B6] rounded-[2.5rem] shadow-xl shadow-[#0077B6]/20 transition-all hover:scale-[1.02] active:scale-98 overflow-hidden text-left">
+                                <button
+                                    onClick={() => router.push("/owner/requests")}
+                                    className="group relative p-8 bg-[#0077B6] rounded-[2.5rem] shadow-xl shadow-[#0077B6]/20 transition-all hover:scale-[1.02] active:scale-98 overflow-hidden text-left"
+                                >
                                     <div className="relative z-10 flex flex-col h-full justify-between">
                                         <Compass className="w-10 h-10 text-[#48CAE4] mb-8 transition-transform group-hover:rotate-12" />
                                         <div>
-                                            <h4 className="text-2xl font-black text-white uppercase leading-none tracking-tighter">View All <br/> Requests</h4>
+                                            <h4 className="text-2xl font-black text-white uppercase leading-none tracking-tighter">View All <br /> Requests</h4>
                                             <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-[#48CAE4] opacity-80">Full Customer Monitor</p>
                                         </div>
                                     </div>
@@ -155,25 +193,51 @@ export default function OwnerDashboard() {
                                 </button>
 
                                 {/* Manage Workers */}
-                                <button className="group relative p-8 bg-white border border-[#001D29]/5 rounded-[2.5rem] shadow-lg shadow-[#001D29]/05 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-98 text-left">
+                                <button
+                                    onClick={() => router.push("/owner/workers")}
+                                    className="group relative p-8 bg-white border border-[#001D29]/5 rounded-[2.5rem] shadow-lg shadow-[#001D29]/05 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-98 text-left"
+                                >
                                     <Users className="w-10 h-10 text-[#0077B6] mb-8 group-hover:scale-110 transition-transform" />
                                     <div>
-                                        <h4 className="text-2xl font-black text-[#001D29] uppercase leading-none tracking-tighter">Manage <br/> Workers</h4>
+                                        <h4 className="text-2xl font-black text-[#001D29] uppercase leading-none tracking-tighter">Manage <br /> Workers</h4>
                                         <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-[#0077B6]">Artisan Assignment</p>
                                     </div>
                                 </button>
 
                                 {/* Other Controls (Mini Grid) */}
-                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {[
-                                        { title: "Inventory", icon: Database, desc: "Track Stock" },
-                                        { title: "AI Rules", icon: Settings, desc: "Decision Engine" },
-                                        { title: "Audit Trail", icon: FileSearch, desc: "Verify Logs" }
+                                        {
+                                            title: "Inventory",
+                                            icon: Database,
+                                            desc: "Track Stock",
+                                            onClick: () => router.push("/owner/inventory"),
+                                        },
+                                        {
+                                            title: "AI Rules",
+                                            icon: Settings,
+                                            desc: "Decision Engine",
+                                            onClick: () => router.push("/owner/rules"),
+                                        },
+                                        {
+                                            title: "Audit Trail",
+                                            icon: FileSearch,
+                                            desc: "Verify Logs",
+                                            onClick: () => router.push("/owner/audit"),
+                                        },
                                     ].map((item, i) => (
-                                        <button key={i} className="flex flex-col items-center justify-center p-6 bg-white/60 backdrop-blur-sm border border-[#001D29]/5 rounded-[2rem] hover:bg-white transition-all group">
+                                        <button
+                                            key={i}
+                                            onClick={item.onClick}
+                                            className="flex flex-col items-center justify-center p-6 bg-white/60 backdrop-blur-sm border border-[#001D29]/5 rounded-[2rem] hover:bg-white transition-all group"
+                                        >
                                             <item.icon className="w-6 h-6 text-[#0077B6] mb-3 group-hover:rotate-12 transition-transform" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[#001D29]">{item.title}</span>
-                                            <span className="text-[8px] font-bold text-[#0077B6]/60 uppercase mt-1">{item.desc}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[#001D29]">
+                                                {item.title}
+                                            </span>
+                                            <span className="text-[8px] font-bold text-[#0077B6]/60 uppercase mt-1">
+                                                {item.desc}
+                                            </span>
                                         </button>
                                     ))}
                                 </div>
@@ -181,7 +245,7 @@ export default function OwnerDashboard() {
                         </motion.section>
 
                         {/* System Summary Card */}
-                        <motion.div 
+                        <motion.div
                             variants={itemVariants}
                             className="bg-[#001D29]/5 border border-[#001D29]/10 rounded-[2.5rem] p-10 flex items-center justify-between"
                         >
@@ -209,3 +273,55 @@ const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
 };
+
+function QuickAssignCard({ task, workers, onAssign, viewDetail }: { task: any, workers: any[], onAssign: () => void, viewDetail: () => void }) {
+    const [selectedWorker, setSelectedWorker] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+
+    const handleAssign = async () => {
+        if (!selectedWorker) return;
+        setLoading(true);
+        try {
+            const { ownerService } = await import("@/lib/api/owner.service");
+            await ownerService.assignTask(task.id, selectedWorker, "Quick assign from dashboard");
+            onAssign();
+        } catch (err) {
+            console.error("Quick assignment failed", err);
+            alert("Assignment failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="bg-white/80 p-4 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex-1">
+                <h4 className="font-black text-[#001D29]">{task.title}</h4>
+                <p className="text-xs font-bold text-amber-600 uppercase tracking-wider">{task.reason}</p>
+                <button onClick={viewDetail} className="text-[10px] underline text-[#0077B6] mt-1 font-bold">
+                    View Full Details
+                </button>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto">
+                <select
+                    value={selectedWorker}
+                    onChange={(e) => setSelectedWorker(e.target.value)}
+                    className="p-2 rounded-lg bg-white border border-[#001D29]/10 text-xs font-bold text-[#001D29] outline-none focus:border-[#0077B6]"
+                >
+                    <option value="">Quick Select...</option>
+                    {workers.map(w => (
+                        <option key={w.id} value={w.id}>{w.name} ({w.activeTaskCount})</option>
+                    ))}
+                </select>
+                <button
+                    onClick={handleAssign}
+                    disabled={!selectedWorker || loading}
+                    className="px-4 py-2 bg-[#001D29] text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-[#0077B6] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                    {loading ? "..." : "Assign"}
+                </button>
+            </div>
+        </div>
+    );
+}

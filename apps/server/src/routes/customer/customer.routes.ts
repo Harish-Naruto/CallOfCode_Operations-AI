@@ -41,6 +41,17 @@ router.get(
 );
 
 /**
+ * @route   GET /api/requests/:requestId
+ * @desc    Get request details with history
+ * @access  Authenticated
+ */
+router.get(
+    "/requests/:requestId",
+    authenticate,
+    (req, res, next) => customerController.getRequestDetail(req, res).catch(next),
+);
+
+/**
  * @route   GET /api/requests/:requestId/status
  * @desc    Get request status
  * @access  Public (optional auth)
